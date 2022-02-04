@@ -26,9 +26,6 @@ stdenv.mkDerivation rec {
     "--with-driver-usart=linux" # build usart driver: windows, linux, None (default: None)
   ];
 
-    gcc server.c -o server -I./libcsp/include -I./libcsp/build_linux/include libcsp/build_linux/libcsp.a -pthread
-
-
   configurePhase = ''
     python waf configure ${builtins.concatStringsSep " " wafFlags}  
   '';
