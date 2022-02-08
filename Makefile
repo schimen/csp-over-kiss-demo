@@ -1,18 +1,22 @@
-# This is a very basic makefile for compiling our CSP demo. 
-# We should improve this makefile later
+LIBCSP       = ./libcsp
+LIBCSP_BUILD = ./libcsp/build
+BUILD        = ./build
+SHELL        = /bin/sh
+CC           = gcc
+RM           = rm -rf
+MKDIR        = mkdir -p
 
-SHELL       := /bin/sh
-RM          := rm -rf
-MKDIR       := mkdir -p
-LIBCSP      := ./libcsp/include
+csp-demo: clean server client
 
-all: 
-    clean build
+server: server.c
+	$(MKDIR) $(BUILD)
+	$(CC) -I $(LIBCSP)/include -pthread -o $(BUILD)/server server.c -L $(LIBCSP_BUILD) -l csp
 
-build:
-	$(MKDIR) build
-	$(CC) server.c -o build/server -I$(LIBCSP)
-	$(CC) client.c -o build/client -I$(LIBCSP)
+client: client.c
+	$(MKDIR) -p $(BUILD)
+	$(CC) -I $(LIBCSP)/include -pthread -o $(BUILD)/client client.c -L $(LIBCSP_BUILD) -l csp
+
+.PHONY: clean
 
 clean:
-	$(RM) ./build
+	$(RM) $(BUILD)
