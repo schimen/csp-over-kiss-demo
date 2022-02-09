@@ -13,7 +13,7 @@ server: server.c
 	$(CC) -I $(LIBCSP)/include -pthread -o $(BUILD)/server server.c -L $(LIBCSP_BUILD) -l csp
 
 client: client.c
-	$(MKDIR) -p $(BUILD)
+	$(MKDIR) $(BUILD)
 	$(CC) -I $(LIBCSP)/include -pthread -o $(BUILD)/client client.c -L $(LIBCSP_BUILD) -l csp
 
 .PHONY: clean
