@@ -12,5 +12,7 @@ pkgs.mkShell {
     check
     nng
     libcsp
+    python
+    socat
   ];
 }
