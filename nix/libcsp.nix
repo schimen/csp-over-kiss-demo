@@ -1,29 +1,34 @@
-{ stdenv, lib, fetchurl, pkgs, python, pkg-config }:
-
+{ stdenv, lib, fetchurl, callPackage, python, pkg-config, unzip }:
+let
+  libsocketcan = callPackage ./libsocketcan.nix {};
+in
 stdenv.mkDerivation rec {
-  pname = "libcsp";
-  version = "1.6.4";
+  name = "libcsp";
   src = fetchurl {
-    url = "https://github.com/GomSpace/libcsp/archive/refs/tags/${version}.tar.gz";
-    sha256 = "1k6f9d1lzckaq6ybi8ss852xn77cpqmabzaa09lzbjqhrnw1s9pd";
+    url = "https://github.com/NTNU-SmallSat-Lab/libcsp/archive/refs/heads/hypso.zip";
+    sha256 = "1i7akz053bd453636iafv6vs88f5383m2k85isqwfv1lk96sqsz3";
   };
   buildInputs = [ 
+    unzip
     python
     pkg-config
   ];
 
   wafFlags = [
-    "--out=$out"                # set out directory
-    "--prefix=$out"             # set install directory
-    "--install-csp"             # install csp headers and lib
-    "--enable-shlib"            # build shared library
-    "--enable-crc32"            # enable cdc32 support
-    #"--enable-can-socketcan"    # enable linux socketcan driver
-    "--enable-promisc"          # enable promscuous support
-    "--enable-examples"         # enable examples
-    "--with-os=posix"           # set operating system (deafult: posix)
-    "--with-rtable='cidr'"      # set routing table: 'static' or 'cidr'
-    "--with-driver-usart=linux" # build usart driver: windows, linux, None (default: None)
+    "--out=$out"                        # set out directory
+    "--prefix=$out"                     # set install directory
+    "--include=${libsocketcan}/include" # include-path for libsocketcan
+    "--install-csp"                     # install csp headers and lib
+    "--enable-crc32"                    # enable cdc32 support
+    "--enable-init-shutdown"            # use init system commands for shutdown/reboot
+    "--enable-if-can"                   # enable can interface 
+    "--enable-can-socketcan"            # enable linux socketcan driver
+    "--enable-promisc"                  # enable promscuous support
+    # "--enable-examples"                 # enable examples
+    "--with-os=posix"                   # set operating system (deafult: posix)
+    "--with-rtable=cidr"                # set routing table: 'static' or 'cidr'
+    "--with-driver-usart=linux"         # build usart driver: windows, linux, None (default: None)
+    "--with-driver-tcp=linux"           # build tcp driver
   ];
 
   configurePhase = ''
