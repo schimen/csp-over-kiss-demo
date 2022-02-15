@@ -92,10 +92,10 @@ Running the example is done by these three steps:
 - Open virtual can
   - `sudo ip link add vcan0 type vcan`
   - `sudo ip link set vcan0 up`
-- Start server, listening for messages
-	- `./build/server <csp-id> <kiss-device>`
-- Start client, sending messages to server
-	- `./build/client <csp-id> <kiss-device> <server-csp-id>`
+- Start servers, listening for messages (choose between can, kiss or both)
+	- `./build/csp-demo -a <address> -k <kiss-device> -c <can-device>`
+- Start client, sending messages to list of servers (separated with comma, no space)
+	- `./build/csp-demo -a <address> -k <kiss-device> -c <can-device> -r <server-list>`
 
 Here is an example where the opened ports are `/dev/pts/1` and `/dev/pts/2`:
 ```bash
@@ -103,6 +103,7 @@ socat -d -d pty,rawer pty,rawer &
 sudo ip link add vcan0 type vcan
 sudo ip link set vcan0 up
 sleep 1
-./build/server 8 /dev/pts/1 &
-./build/client 9 /dev/pts/2 8
+./build/csp-demo -a 8 -k /dev/pts/1 &
+./build/csp-demo -a 19 -c vcan0 &
+./build/csp-demo -a 9 -k /dev/pts/2 -c vcan0 -r 8,19
 ```
