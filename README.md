@@ -72,17 +72,6 @@ To build this demonstration, navigate to the root directory of this repository a
 ```bash
 make
 ```
-This should build both the server and the client. to build only the server or the client, run
-
-```bash
-make server
-``` 
-
-or 
-
-```bash
-make client
-```
 
 ## Run demonstration:
 To run the demonstration, make sure both the server and client is built correctly.
