@@ -82,17 +82,24 @@ Running the example is done by these three steps:
   - `sudo ip link add vcan0 type vcan`
   - `sudo ip link set vcan0 up`
 - Start servers, listening for messages (choose between can, kiss or both)
-	- `./build/csp-demo -a <address> -k <kiss-device> -c <can-device>`
+	- `./build/csp-demo -a <address> -k <kiss-device=address/mask> -c <can-device=address/mask>`
 - Start client, sending messages to list of servers (separated with comma, no space)
-	- `./build/csp-demo -a <address> -k <kiss-device> -c <can-device> -r <server-list>`
+	- `./build/csp-demo -a <address> -k <kiss-device=address/mask> -c <can-device=address/mask> -r <address,address>`
 
 Here is an example where the opened ports are `/dev/pts/1` and `/dev/pts/2`:
+First set up virtual can and serial ports (this requires sudo):
 ```bash
-socat -d -d pty,rawer pty,rawer &
 sudo ip link add vcan0 type vcan
 sudo ip link set vcan0 up
-sleep 1
-./build/csp-demo -a 8 -k /dev/pts/1 &
-./build/csp-demo -a 19 -c vcan0 &
-./build/csp-demo -a 9 -k /dev/pts/2 -c vcan0 -r 8,19
+socat -d -d pty,rawer pty,rawer &
 ```
+Now we can run our example:
+```bash
+./build/csp-demo -a 8 -k /dev/pts/1=0/0 &
+./build/csp-demo -a 19 -c vcan0=0/0 &
+./build/csp-demo -a 9 -k /dev/pts/2=0/1 -c vcan0=16/1 -r 8,19
+```
+
+Here is an image from a local run of the demonstration with vcan0 and virtual serial ports /dev/pts/1 and /dev/pts/2.
+In this demonstration the client (left) sends messages to address 10 (lower right) and 12 (upper right).
+![demonstration-image](demonstration.png)

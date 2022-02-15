@@ -22,7 +22,7 @@ CSP_DEFINE_TASK(task_client) {
             
             // ping server address and show the response time:
             
-            printf("Pinging address %d: ", server_address);
+            printf("Pinging address %d: \n", server_address);
             int result = csp_ping(server_address, 100, 1, CSP_O_NONE); // ping with 1 byte
             printf("Ping result %d [ms]\r\n", result);
             
@@ -45,7 +45,7 @@ CSP_DEFINE_TASK(task_client) {
             packet->length = strlen(msg);
             // send packet
             if (csp_send(conn, packet, 1000)){
-                printf("Sent '%s' to address %d\n", msg, csp_conn_dst(conn));
+                printf("Sent '%s' to address %d\n", msg, server_address);
                 csp_close(conn); // close connection after sending
             }
             else {
@@ -75,18 +75,18 @@ CSP_DEFINE_TASK(task_server) {
 
             // read packets, timeout is 100 ms
             while ((packet = csp_read(conn, 100)) != NULL) {
-        switch (csp_conn_dport(conn)) { // check the destination port of the connection
-            case 10:
-                // when a message is sent to port 10, show the content
-                printf("Packet from address %d: '%s'\n", 
-                        csp_conn_src(conn), (char *) packet->data);
-                csp_buffer_free(packet); // free buffer for next message
-                break;
-            default:
-                // if it was sent to an uninteresting port, call normal service handler
-                csp_service_handler(conn, packet);
-                break;
-        }
+                switch (csp_conn_dport(conn)) { // check the destination port of the connection
+                    case 10:
+                        // when a message is sent to port 10, show the content
+                        printf("Packet from address %d: '%s'\n", 
+                                csp_conn_src(conn), (char *) packet->data);
+                        csp_buffer_free(packet); // free buffer for next message
+                        break;
+                    default:
+                        // if it was sent to an uninteresting port, call normal service handler
+                        csp_service_handler(conn, packet);
+                        break;
+                }
             }
             // close current connection
             csp_close(conn);
@@ -154,15 +154,11 @@ void csp_start( csp_thread_return_t (* thread_task)(void *), char * name ) {
 }
 
 void setup_debug() {
-    printf("Debug enabled\r\n");
-	csp_debug_toggle_level(3);
+	//csp_debug_toggle_level(3);
 	csp_debug_toggle_level(4);
 
 	printf("Route table\r\n");
 	csp_route_print_table();
-
-	printf("Interfaces\r\n");
-	csp_route_print_interfaces();
 }
 
 void parse_addresses_inplace(char * address_string, uint8_t * addresses) {
@@ -187,10 +183,17 @@ bool is_server() {
 }
 
 int main(int argc, char * argv[]) {
+
     // default values
     uint8_t address = 1;
-    char * can_device = NULL;
-    char * kiss_device = NULL;
+
+    char    kiss_device[20] =  {'\0'}; // initialize empty string
+    uint8_t kiss_address = 0; // default address
+    uint8_t kiss_netmask = 0; // default mask
+
+    char    can_device[10] = {'\0'}; // initialize empty string
+    uint8_t can_address = 0; // default address
+    uint8_t can_netmask = 0; // default mask
 
     // parse arguments
     int opt;
@@ -203,23 +206,25 @@ int main(int argc, char * argv[]) {
                 parse_addresses_inplace(optarg, server_addresses);
                 break;
             case 'k':
-                kiss_device = optarg;
+                sscanf(optarg, "%[^=]=%hhu/%hhu", kiss_device, &kiss_address, &kiss_netmask);
                 break;
             case 'c':
-                can_device = optarg;
+                sscanf(optarg, "%[^=]=%hhu/%hhu", can_device, &can_address, &can_netmask);
                 break;
             default:
                 printf("Usage:\n"
-                       " -a  <address>     local CSP address\n"
-                       " -r  <addresses>   run client against server addresses \n"
-                       "                   (seperated with comma and maximum 10)\n"
-                       " -k  <kiss-device> add KISS device (serial)\n"
-                       " -c  <can-device>  add CAN device\n");
+                       " -a  <address>             Local CSP address\n"
+                       " -r  <address,address>     Run client against server addresses (max 10)\n"
+                       "                           (example: -r 8,10,12,14)\n"
+                       " -k  <device=address/mask> Add KISS interface (serial)\n"
+                       "                           (example: -k /dev/ttyUSB0=0/0)\n"
+                       " -c  <device=address/mask> Add CAN interface\n"
+                       "                           (example: -c can0=0/0)");
                 exit(1);
                 break;
         }
-    }
-                                                                           
+    }           
+
     csp_setup(address);                                                                      
 
     // initialize kiss interface (these values must be available for main function)
@@ -231,12 +236,12 @@ int main(int argc, char * argv[]) {
         csp_kiss_rx(&kiss_iface, buf, len, pxTaskWoken);
     }
     // setup kiss
-    if (kiss_device != NULL) {
-        kiss_setup(kiss_device, "KISS interface", 0, 1, &kiss_iface, &kiss_driver, kiss_callback_func);
+    if (kiss_device[0] != '\0') {
+        kiss_setup(kiss_device, "KISS interface", kiss_address, kiss_netmask, &kiss_iface, &kiss_driver, kiss_callback_func);
     }
     //setup can
-    if (can_device != NULL) {
-        can_setup(can_device, 0, 16, 1);
+    if (can_device[0] != '\0') {
+        can_setup(can_device, 0, can_address, can_netmask);
     }                                                                           
 
     if (is_server()) { // if there are no addresses in server_addresses
