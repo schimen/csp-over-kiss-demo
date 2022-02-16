@@ -1,3 +1,7 @@
 [submodule "libcsp"]
 	path = libcsp
 	url = https://github.com/NTNU-SmallSat-Lab/libcsp.git
+
+[submodule "libsocketcan"]
+	path = libsocketcan
+	url = https://github.com/lalten/libsocketcan

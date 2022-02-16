@@ -3,6 +3,7 @@
 let
   nng = pkgs.callPackage ./nng.nix {};
   libcsp = pkgs.callPackage ./libcsp.nix {};
+  libsocketcan = pkgs.callPackage ./libsocketcan.nix {};
 in
 
 pkgs.mkShell {
@@ -12,6 +13,7 @@ pkgs.mkShell {
     check
     nng
     libcsp
+    libsocketcan
     python
     socat
   ];
