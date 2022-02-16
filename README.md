@@ -2,7 +2,7 @@
 This repository contains a demonstration of Cubesat Protocol over Serial with KISS.
 It is implemented using [libcsp](https://github.com/NTNU-SmallSat-Lab/libcsp) and communicating over virtual serial-ports.
 
-The demonstration contains two programs, a server and a client. The client sends messages over KISS to the server, and the server displays the received message.
+The demonstration contains one program that can be run as either a server or a client. The client sends messages over KISS to the server, and the server displays the received message.
 
 ## Dependencies:
 To build this demonstration, you need:
@@ -74,7 +74,7 @@ make
 ```
 
 ## Run demonstration:
-To run the demonstration, make sure both the server and client is built correctly.
+To run the demonstration, make sure everything is built correctly beforehand.
 Running the example is done by these three steps:
 - Open pseudo-serial port with socat
 	- `socat -d -d pty,rawer pty,rawer`
